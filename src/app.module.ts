@@ -1,16 +1,17 @@
 import { Module } from '@nestjs/common';
-import { GiftModule } from './gift/gift.module';
-import { UserModule } from './user/user.module';
+import { HospitalModule } from './hospital/hospital.module';
 import { AuthModule } from './auth/auth.module';
-import { Bcrypt } from './libs/bcrypt/bcrypt';
 import { PrismaService } from './common/db/prisma.service';
-import { UserRepository } from './user/user.repository';
-import { UserService } from './user/user.service';
+import { HospitalRepository } from './hospital/hospital.repository';
+import { HospitalService } from './hospital/hospital.service';
+import { DoctorModule } from './doctor/doctor.module';
+import { PatientModule } from './patient/patient.module';
+import { AppointmentModule } from './appointment/appointment.module';
 
 
 @Module({
-  imports: [GiftModule, UserModule, AuthModule],
+  imports: [ HospitalModule, AuthModule, DoctorModule, PatientModule, AppointmentModule],
   controllers: [],
-  providers: [UserService, UserRepository, PrismaService],
+  providers: [HospitalService, HospitalRepository, PrismaService],
 })
 export class AppModule {}

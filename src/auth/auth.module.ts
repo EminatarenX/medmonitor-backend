@@ -1,23 +1,23 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { UserService } from 'src/user/user.service';
-import { UserRepository } from 'src/user/user.repository';
+import { HospitalService } from 'src/hospital/hospital.service';
+import { HospitalRepository } from 'src/hospital/hospital.repository';
 import { PrismaService } from 'src/common/db/prisma.service';
-import { UserModule } from 'src/user/user.module';
+import { HospitalModule } from 'src/hospital/hospital.module';
 import { JwtModule } from '@nestjs/jwt';
 import { Bcrypt } from 'src/libs/bcrypt/bcrypt';
 
 @Module({
   controllers: [AuthController],
   imports: [
-    UserModule,
+    HospitalModule,
     JwtModule.register({
       global: true,
       secret: 'secret',
       signOptions: { expiresIn: '1d'}
     })
   ],
-  providers: [AuthService, UserService, UserRepository,PrismaService, Bcrypt],
+  providers: [AuthService, HospitalService, HospitalRepository,PrismaService, Bcrypt],
 })
 export class AuthModule {}

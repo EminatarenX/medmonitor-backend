@@ -1,35 +1,104 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-model user {
-  id String @id @default(cuid())
-  fullname String?
-  telephone String?
-  gifts gift[]
-}
-
-model admin {
+model hospital {
   id String @id @default(uuid())
   email String @unique
   password String
+  token String?
+  active Boolean @default(true)
+  doctors doctor[]
+  patients patient[]
+  register register[]
+  appointment appointment[]
+  information hospitalInformation[]
+  createdAt DateTime @default(now())
 }
 
-model gift {
-  id String @id @default(cuid())
+model hospitalInformation {
+  id String @id @default(uuid())
+  hospitalId String
+  hospital hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  
+}
+
+
+model doctor {
+  id String @id @default(uuid())
   name String
-  image String
-  urls String?
-  available Boolean
-  userID String?
-  user user? @relation(fields: [userID], references: [id])
+  lastName String
+  email String @unique
+  birthDay DateTime
+  password String
+  role String
+  specialty String
+  country String
+  city String
+  active Boolean @default(true)
+  patients patient[]
+  register register[]
+  appointment appointment[]
+  hospitalId String
+  hospital hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+}
+
+model patient {
+  id String @id @default(uuid())
+  name String
+  lastName String
+  email String @unique
+  birthDay DateTime
+  role String
+  country String
+  city String
+  hospitalId String
+  active Boolean @default(true)
+  doctorId String
+  register register[]
+  appointment appointment[]
+  monitor monitor[]
+  doctor doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  hospital hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model register {
+  id String @id @default(uuid())
+  patientId String
+  diagnosis String
+  patient patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctorId String
+  doctor doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  hospitalId String
+  hospital hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model appointment {
+  id String @id @default(uuid())
+  patientId String
+  doctorId String
+  hospitalId String
+  date DateTime
+  patient patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  hospital hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model monitor {
+  id String @id @default(uuid())
+  heartRate Float
+  bloodPressure Float
+  oxygenSaturation Float
+  patientId String
+  patient patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 }
