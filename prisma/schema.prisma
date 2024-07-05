@@ -35,13 +35,17 @@ model doctor {
   name String
   lastName String
   email String @unique
-  birthDay DateTime
+  phone String? @unique
+  birthDate DateTime
   password String
-  role String
+  role String @default("doctor")
   specialty String
-  country String
-  city String
+  area String
+  gender String
   active Boolean @default(true)
+  joinDate DateTime
+  experience String?
+  education String?
   patients patient[]
   register register[]
   appointment appointment[]

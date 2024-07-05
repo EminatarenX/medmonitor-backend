@@ -1,25 +1,30 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
 import { DoctorService } from './doctor.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Controller('doctor')
 export class DoctorController {
   constructor(private readonly doctorService: DoctorService) {}
 
+  @UseGuards(AuthGuard)
   @Post()
-  create(@Body() createDoctorDto: CreateDoctorDto) {
-    return this.doctorService.create(createDoctorDto);
+  create(@Request() req,@Body() createDoctorDto: CreateDoctorDto) {
+    return this.doctorService.create(createDoctorDto, req.user.sub);
   }
 
+  @UseGuards(AuthGuard)
   @Get()
-  findAll() {
-    return this.doctorService.findAll();
+  findAll(@Request() req, @Query() paginationDto: PaginationDto){
+    return this.doctorService.findAll(req.user.sub, paginationDto);
   }
 
+  @UseGuards(AuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.doctorService.findOne(+id);
+  findOne(@Request() req, @Param('id') id: string) {
+    return this.doctorService.findOne(id);
   }
 
   @Patch(':id')

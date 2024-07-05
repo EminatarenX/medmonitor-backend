@@ -1,10 +1,12 @@
-import { IsEmail, IsString } from "class-validator";
+import { IsEmail, IsNotEmpty, IsString } from "class-validator";
 
 export class CreateAuthDto {
     @IsString()
-    @IsEmail()
+    @IsNotEmpty()
+    @IsEmail({}, { message: 'El correo electrónico no es valido' })
     email: string
 
+    @IsNotEmpty()
     @IsString()
     password: string
 }
