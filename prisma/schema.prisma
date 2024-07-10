@@ -16,8 +16,6 @@ model hospital {
   active Boolean @default(true)
   doctors doctor[]
   patients patient[]
-  register register[]
-  appointment appointment[]
   information hospitalInformation[]
   createdAt DateTime @default(now())
 }
@@ -46,57 +44,57 @@ model doctor {
   joinDate DateTime
   experience String?
   education String?
+  messages message[]
   patients patient[]
-  register register[]
-  appointment appointment[]
+  chats chat[]
   hospitalId String
   hospital hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 }
 
 model patient {
-  id String @id @default(uuid())
+  id String @id 
   name String
   lastName String
-  email String @unique
-  birthDay DateTime
-  role String
-  country String
-  city String
+  email String? @unique
+  birthDate DateTime
+  phone String 
+  role String @default("patient")
+  address String
+  gender String
   hospitalId String
+  doctorId String
   active Boolean @default(true)
-  doctorId String
-  register register[]
-  appointment appointment[]
   monitor monitor[]
+  chats chat[]
+  messages message[]
   doctor doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   hospital hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 }
 
-model register {
+model chat {
   id String @id @default(uuid())
   patientId String
-  diagnosis String
-  patient patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
   doctorId String
+  patient patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
   doctor doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  hospitalId String
-  hospital hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  messages message[]
+
+}
+
+model message {
+  id String @id @default(uuid())
+  chatId String
+  chat chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  senderId String
+  receiverId String
+  sender patient @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  receiver doctor @relation(fields: [receiverId], references: [id], onDelete: Cascade)
+  content String
   createdAt DateTime @default(now())
 }
 
-model appointment {
-  id String @id @default(uuid())
-  patientId String
-  doctorId String
-  hospitalId String
-  date DateTime
-  patient patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  doctor doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  hospital hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-}
 
 model monitor {
   id String @id @default(uuid())

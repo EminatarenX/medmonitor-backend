@@ -4,11 +4,13 @@ import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { PrismaService } from 'src/common/db/prisma.service';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { Bcrypt } from 'src/libs/bcrypt/bcrypt';
+import { PatientRepository } from 'src/patient/patient.repository';
 
 @Injectable()
 export class DoctorService {
   constructor(
     private readonly dbService: PrismaService,
+    private readonly patientRepository: PatientRepository,
     private readonly hashService: Bcrypt
   ){}
   async create(createDoctorDto: CreateDoctorDto, hospitalId: string) {
@@ -50,12 +52,26 @@ export class DoctorService {
     })
   }
 
-  update(id: number, updateDoctorDto: UpdateDoctorDto) {
-    return `This action updates a #${id} doctor`;
+  async update(id: string, updateDoctorDto: UpdateDoctorDto) {
+    const exist = this.findOne(id)
+    if(!exist) throw new BadRequestException('El doctor no existe')
+    updateDoctorDto.password = await this.hashService.hash(updateDoctorDto.password)
+    return await this.dbService.doctor.update({
+      where: {id},
+      data: updateDoctorDto
+    })
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} doctor`;
+  async remove(id: string) {
+    const doctor = await this.findOne(id)
+    if(!doctor) throw new BadRequestException('El doctor no existe')
+    await this.dbService.doctor.delete({where: {id}})
+    return
+
+  }
+
+  findAllPatients(id: string, pagintationDto: PaginationDto) {
+    return this.patientRepository.findAllByDoctorId(id, pagintationDto.limit, pagintationDto.offset)
   }
 
   handleErrors (error: any) {

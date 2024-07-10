@@ -18,10 +18,21 @@ export class AuthController {
     return this.authService.register(createAuthDto);
   }
 
+  @Post('doctor/login')
+  doctorLogin(@Body() createAuthDto: CreateAuthDto){
+    return this.authService.doctorLogin(createAuthDto.email, createAuthDto.password)
+  }
+
   @UseGuards(AuthGuard)
   @Get('profile')
   getProfile(@Request() req) {
     return this.authService.profile(req.user.id)
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('doctor/profile')
+  getDoctorProfile(@Request() req) {
+    return this.authService.doctorProfile(req.user.sub)
   }
   
 }
