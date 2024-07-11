@@ -5,6 +5,7 @@ import { HospitalRepository } from '../../hospital/hospital.repository';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { Bcrypt } from 'src/libs/bcrypt/bcrypt';
 import { PrismaService } from 'src/common/db/prisma.service';
+import { access } from 'fs';
 
 @Injectable()
 export class AuthService {
@@ -71,10 +72,28 @@ export class AuthService {
     const payload = { sub: user.id, user: user.email}
     const token = await this.jwtService.signAsync(payload)
     
-
     return  {
       user: {...user, password: undefined},
       access_token: token
+    }
+  }
+
+  async patientLogin(id: string) {
+    const user = await this.db.patient.findUnique({where: {id}})
+    if(!user) throw new UnauthorizedException('El paciente no está registrado');
+    const payload = { sub: user.id, user: user.id}
+    const token = await this.jwtService.signAsync(payload)
+    return {
+      user: {...user, password: undefined},
+      access_token: token
+    }
+  }
+
+  async patientProfile(id: string) {
+    const user = await this.db.patient.findUnique({where: {id}})
+    return {
+      user: {...user, password: undefined},
+      access_token: await this.jwtService.signAsync({ sub: user.id, user: user.id})
     }
   }
 
