@@ -7,10 +7,11 @@ import { HospitalService } from './hospital/hospital.service';
 import { DoctorModule } from './doctor/doctor.module';
 import { PatientModule } from './patient/patient.module';
 import { AppointmentModule } from './appointment/appointment.module';
+import { ChatModule } from './chat/chat.module';
 
 
 @Module({
-  imports: [ HospitalModule, AuthModule, DoctorModule, PatientModule, AppointmentModule],
+  imports: [ HospitalModule, AuthModule, DoctorModule, PatientModule, AppointmentModule, ChatModule],
   controllers: [],
   providers: [HospitalService, HospitalRepository, PrismaService],
 })

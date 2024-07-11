@@ -44,7 +44,7 @@ model doctor {
   joinDate DateTime
   experience String?
   education String?
-  messages message[]
+  // messages message[]
   patients patient[]
   chats chat[]
   hospitalId String
@@ -67,7 +67,7 @@ model patient {
   active Boolean @default(true)
   monitor monitor[]
   chats chat[]
-  messages message[]
+  // messages message[]
   doctor doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   hospital hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
@@ -86,12 +86,12 @@ model chat {
 model message {
   id String @id @default(uuid())
   chatId String
-  chat chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
   senderId String
   receiverId String
-  sender patient @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  receiver doctor @relation(fields: [receiverId], references: [id], onDelete: Cascade)
   content String
+  chat chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  // sender patient @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  // receiver doctor @relation(fields: [receiverId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 }
 
