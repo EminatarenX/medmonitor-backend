@@ -35,7 +35,7 @@ export class CreateDoctorDto {
     experience: string
 
     @IsOptional()
-    education: string
+    education: string   
 
     @IsNotEmpty()
     @IsString()

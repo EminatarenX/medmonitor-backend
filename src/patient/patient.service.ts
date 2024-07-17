@@ -4,6 +4,7 @@ import { UpdatePatientDto } from './dto/update-patient.dto';
 import { PatientRepository } from './patient.repository';
 import { PrismaService } from 'src/common/db/prisma.service';
 import { PrismaClientKnownRequestError, PrismaClientValidationError } from '@prisma/client/runtime/library';
+import { CreatePatientHospitalDto } from './dto/create-patient.dto-hospital';
 
 @Injectable()
 export class PatientService {
@@ -46,10 +47,38 @@ export class PatientService {
   }
 
   update(id: string, updatePatientDto: UpdatePatientDto) {
-    return `This action updates a #${id} patient`;
+    return this.patientRepository.update(id, updatePatientDto);
   }
 
   remove(id: string) {
     return `This action removes a #${id} patient`;
+  }
+
+  // Create
+  async createPatient(createPatientHospitalDto : CreatePatientHospitalDto) {
+
+    const doctor = await this.db.doctor.findUnique({ where: { id: createPatientHospitalDto.doctorId } });
+    if (!doctor) throw new UnauthorizedException(); 
+
+    const patientId = this.patientRepository.generatePatientHospitalId(
+      createPatientHospitalDto,
+      createPatientHospitalDto.doctorId,
+    );
+
+    try {
+      
+      await this.patientRepository.generatePatientHospitalId(
+       createPatientHospitalDto,
+       patientId,
+     );
+     } catch (e) {
+       if(e instanceof PrismaClientKnownRequestError){
+         if(e.code === 'P2002'){
+           throw new BadRequestException(`Duplicate field value: ${e.meta.target}`)
+         }
+         throw new BadRequestException(e.message)
+       }
+     }
+
   }
 }

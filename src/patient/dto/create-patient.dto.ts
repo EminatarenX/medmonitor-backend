@@ -1,6 +1,7 @@
 import { IsEmail, IsNotEmpty } from "class-validator"
 
 export class CreatePatientDto {
+
     @IsNotEmpty()
     name: string
 
@@ -22,4 +23,5 @@ export class CreatePatientDto {
     
     @IsNotEmpty()
     address: string
+
 }

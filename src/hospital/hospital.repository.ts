@@ -3,10 +3,11 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 
 @Injectable()
 export class HospitalRepository {
+
     constructor(private db: PrismaService) {}
 
     async create(data: { email: string, password: string}) {
-        return this.db.hospital.create({ data })
+        return this.db.hospital.create({ data })    
     }
 
     async registerAdmin(data: { email: string, password: string}){
