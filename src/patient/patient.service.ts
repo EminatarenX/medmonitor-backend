@@ -39,8 +39,10 @@ export class PatientService {
 
 
 
-  findOne(id: string) {
-    return `This action returns a #${id} patient`;
+  async findOne(id: string) {
+    const patient = await this.patientRepository.findOne(id);
+    if (!patient) throw new BadRequestException('Patient not found');
+    return patient;
   }
 
   update(id: string, updatePatientDto: UpdatePatientDto) {

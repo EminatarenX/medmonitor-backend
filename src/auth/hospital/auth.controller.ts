@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, HttpCode, HttpStatus, UseGuards, Request }
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { AuthGuard } from './auth.guard';
+import { PatientAuthDto } from './dto/patient-auth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -23,6 +24,11 @@ export class AuthController {
     return this.authService.doctorLogin(createAuthDto.email, createAuthDto.password)
   }
 
+  @Post('patient/login')
+  patientLogin(@Body() patientAuthDto: PatientAuthDto){
+    return this.authService.patientLogin(patientAuthDto.id)
+  }
+
   @UseGuards(AuthGuard)
   @Get('profile')
   getProfile(@Request() req) {
@@ -33,6 +39,12 @@ export class AuthController {
   @Get('doctor/profile')
   getDoctorProfile(@Request() req) {
     return this.authService.doctorProfile(req.user.sub)
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('patient/profile')
+  getPatientProfile(@Request() req) {
+    return this.authService.patientProfile(req.user.sub)
   }
   
 }
