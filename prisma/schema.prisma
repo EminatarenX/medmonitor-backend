@@ -101,9 +101,17 @@ model message {
 
 model monitor {
   id String @id @default(uuid())
-  heartRate Float
-  bloodPressure Float
-  oxygenSaturation Float
   patientId String
   patient patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  bpmSpo2 bpmSpo2[]
+}
+
+model bpmSpo2 {
+
+  id Int @id @default(autoincrement())
+  monitorId String 
+  monitor monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  bpm Float
+  spo2 Float
+
 }

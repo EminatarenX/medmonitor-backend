@@ -1,33 +1,69 @@
 import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { MessageMqttService } from './message-mqtt.service';
 import { Server, Socket } from 'socket.io'
+import { JwtService } from '@nestjs/jwt';
+import { JWTPayload } from 'src/auth/jwt/jwtpayload.interface';
+
 
 @WebSocketGateway({cors: true, namespace: 'mqtt'})
 
 export class MessageMqttGateway {
   
-  constructor(private readonly messageMqttService: MessageMqttService) {}
+  constructor(private readonly messageMqttService: MessageMqttService, private readonly jwtService : JwtService) {}
 
   @WebSocketServer() wss: Server;
+  private dataBuffer: any[] = [];
+  private readonly BUFFER_INTERVAL = 1000;
 
-  handleConnection(client: Socket) {
-   console.log('client connected')
+  async handleConnection(client: Socket) {
+    const token = client.handshake.headers.authentication as string;
+    let payload: JWTPayload;
+    try {
+      payload = this.jwtService.verify( token );
+      await this.messageMqttService.registerClient(client, payload.sub, payload.role);
+
+    } catch (error) {
+      client.disconnect();
+      return
+    }
+
+    // console.log(this.messageWsService.getConnectedClients().map(e => e))
+  }
+
+  joinMonitor(client: Socket, payload:any) {
+
+    const token = client.handshake.headers.authorization as string;
+    const userPayload = this.jwtService.verify(token);
+
+    const user = this.messageMqttService.getUser(userPayload.sub);
+
+    client.join(`monitor/${user.user.id}`);
   }
 
   handleDisconnect(client: Socket) {
+
+    console.log('client disconnected');
     
   }
 
-  @SubscribeMessage('message')
-  handleMessage(client: Socket, payload: any) {
-    console.log('message', {payload})
-    // TODO: Emitir todos los datos el front wss.to().emit('health/motior', payload)
-    //this.wss.emit('health/monitor', payload);
+  @SubscribeMessage('health/monitor')
+  handleMessage(client: Socket, payload: {BPM: string, SPO2: string}) {
+  
+    if (client.handshake.headers.authorization) {
 
-    console.log(payload);
+      const token = client.handshake.headers.authentication as string;
+      const userPayload = this.jwtService.verify(token);
+      const user = this.messageMqttService.getUser(userPayload.sub);
+
+      this.wss.to(`monitor/${user.user.id}`).emit('monitor');
+
+    } 
+    
+    console.log(payload.BPM);
+    console.log(payload.SPO2);
 
     // TODO: Guardar en la base de datos
-    //this.messageMqttService.savedMessage(payload);
+    
     
   }
 }
