@@ -125,4 +125,16 @@ export class MonitorService {
     })
     
   }
+
+  async registerMonitorDataByTopic(topic: string, payload: {BPM: number, SPO2: number}) {
+    const monitor = await this.db.monitor.findFirst({ where: { channel: topic}})
+    if (!monitor) return;
+      return this.db.monitorData.create({
+      data: {
+        monitor: { connect: {id: monitor.id}},
+        bpm: payload.BPM,
+        spo2:payload.SPO2
+      }
+    })
+  }
 }

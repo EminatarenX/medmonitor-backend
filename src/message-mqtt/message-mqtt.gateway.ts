@@ -1,68 +1,67 @@
-import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import {
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { MessageMqttService } from './message-mqtt.service';
-import { Server, Socket } from 'socket.io'
+import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { JWTPayload } from 'src/auth/jwt/jwtpayload.interface';
 
-
-@WebSocketGateway({cors: true, namespace: 'mqtt'})
-
+@WebSocketGateway({ cors: true, namespace: 'mqtt' })
 export class MessageMqttGateway {
-  
-  constructor(private readonly messageMqttService: MessageMqttService, private readonly jwtService : JwtService) {}
+  constructor(
+    private readonly messageMqttService: MessageMqttService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   @WebSocketServer() wss: Server;
   private dataBuffer: any[] = [];
   private readonly BUFFER_INTERVAL = 1000;
+  private lastSavedTimestamp = 0;
+  private lastBPM: string | null = null;
+  private lastSPO2: string | null = null;
 
   async handleConnection(client: Socket) {
     const token = client.handshake.headers.authentication as string;
     let payload: JWTPayload;
     try {
-      payload = this.jwtService.verify( token );
-      await this.messageMqttService.registerClient(client, payload.sub, payload.role);
-
+      payload = this.jwtService.verify(token);
+      await this.messageMqttService.registerClient(
+        client,
+        payload.sub,
+        payload.role,
+      );
     } catch (error) {
-      client.disconnect();
-      return
+      // client.disconnect();
+      return;
     }
 
     // console.log(this.messageWsService.getConnectedClients().map(e => e))
   }
 
-  joinMonitor(client: Socket, payload:any) {
-
-    const token = client.handshake.headers.authorization as string;
-    const userPayload = this.jwtService.verify(token);
-
-    const user = this.messageMqttService.getUser(userPayload.sub);
-
-    client.join(`monitor/${user.user.id}`);
-  }
-
   handleDisconnect(client: Socket) {
-
-    console.log('client disconnected');
-    
+    this.handleConnection(client);
   }
 
   @SubscribeMessage('health/monitor')
-  handleMessage(client: Socket, payload: {BPM: string, SPO2: string} | any) {
-  
-    if (client.handshake.headers.authorization) {
-      const token = client.handshake.headers.authentication as string;
-      const userPayload = this.jwtService.verify(token);
-      const user = this.messageMqttService.getUser(userPayload.sub);
+  async handleMessage(
+    client: Socket,
+    payload: { topic: string; BPM: string; SPO2: string } | any,
+  ) {
+    const currentTimestamp = Date.now();
+    const interval = 3000; // 3 seconds
 
-      this.wss.to(`monitor/${user.user.id}`).emit('monitor', payload);
 
-    } 
-    
-    console.log(payload.BPM);
-    console.log(payload.SPO2);
 
-    // TODO: Guardar en la base de datos
-    
-    
+    const bpmChanged = payload.BPM !== this.lastBPM;
+    const spo2Changed = payload.SPO2 !== this.lastSPO2;
+
+    if ((currentTimestamp - this.lastSavedTimestamp >= interval) && (bpmChanged || spo2Changed)) {
+      this.messageMqttService.saveSensorData(payload.topic, +payload.BPM, +payload.SPO2);
+      this.lastSavedTimestamp = currentTimestamp;
+      this.lastBPM = payload.BPM;
+      this.lastSPO2 = payload.SPO2;
+    }
   }
 }

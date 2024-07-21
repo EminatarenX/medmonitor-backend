@@ -3,6 +3,7 @@ import { Socket } from 'socket.io';
 import { MessageDto } from './dto/message.dto';
 import { MessageRepository } from './message-mqtt.repository';
 import { PrismaService } from 'src/common/db/prisma.service';
+import { MonitorService } from 'src/monitor/monitor.service';
 
 interface clients {
     [id: string]: {
@@ -16,12 +17,10 @@ export class MessageMqttService {
 
     private connectedClients: clients = {};
 
-    constructor(private readonly prismaService : PrismaService) {}
+    constructor(private readonly prismaService : PrismaService, private readonly monitorService: MonitorService) {}
     
-    async savedMessage(payload:any) {
-
-      
-
+    async saveSensorData(topic: string, BPM: number, SPO2: number) {
+      return await this.monitorService.registerMonitorDataByTopic(topic, {BPM, SPO2})
     }
 
     getUser(id: string) {
@@ -50,7 +49,7 @@ export class MessageMqttService {
           user = patient;
           break;
         default:
-          client.disconnect();
+          // client.disconnect();
           break;
       }
 }
