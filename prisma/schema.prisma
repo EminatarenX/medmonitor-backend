@@ -10,108 +10,176 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-
 model hospital {
-  id String @id @default(uuid())
-  email String @unique
-  password String
-  token String?
-  active Boolean @default(true)
-  doctors doctor[]
-  patients patient[]
+  id          String                @id @default(uuid())
+  email       String                @unique
+  password    String
+  token       String?
+  active      Boolean               @default(true)
+  doctors     doctor[]
+  patients    patient[]
+  monitor     monitor[]
   information hospitalInformation[]
-  createdAt DateTime @default(now())
+  createdAt   DateTime              @default(now())
 }
 
 model hospitalInformation {
-  id String @id @default(uuid())
+  id         String   @id @default(uuid())
   hospitalId String
-  hospital hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
-  
+  hospital   hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
 }
 
-
 model doctor {
-  id String @id @default(uuid())
-  name String
-  lastName String
-  email String @unique
-  phone String? @unique
-  birthDate DateTime
-  password String
-  role String @default("doctor")
-  specialty String
-  area String
-  gender String
-  active Boolean @default(true)
-  joinDate DateTime
+  id         String    @id @default(uuid())
+  name       String
+  lastName   String
+  email      String    @unique
+  phone      String?   @unique
+  birthDate  DateTime
+  password   String
+  role       String    @default("doctor")
+  specialty  String
+  area       String
+  gender     String
+  active     Boolean   @default(true)
+  joinDate   DateTime
   experience String?
-  education String?
-  // messages message[]
-  patients patient[]
-  chats chat[]
+  education  String?
+  monitor    monitor[]
+  patients   patient[]
+  chats      chat[]
   hospitalId String
-  hospital hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  hospital   hospital  @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
 }
 
 model patient {
-  id String @id 
-  name String
-  lastName String
-  email String? @unique
-  birthDate DateTime
-  phone String 
-  role String @default("patient")
-  address String
-  gender String
-  hospitalId String
-  doctorId String
-  active Boolean @default(true)
-  monitor monitor[]
-  chats chat[]
-  // messages message[]
-  doctor doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  hospital hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  id             String           @id
+  name           String
+  lastName       String
+  email          String?          @unique
+  birthDate      DateTime
+  phone          String
+  role           String           @default("patient")
+  address        String
+  gender         String
+  hospitalId     String
+  doctorId       String
+  active         Boolean          @default(true)
+  monitor        monitor[]
+  chats          chat[]
+  medicalHistory MedicalHistory[]
+  doctor         doctor           @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  hospital       hospital         @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  createdAt      DateTime         @default(now())
 }
 
 model chat {
-  id String @id @default(uuid())
+  id        String    @id @default(uuid())
   patientId String
-  doctorId String
-  patient patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  doctor doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  messages message[]
-
+  doctorId  String
+  patient   patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor    doctor    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  messages  message[]
 }
 
 model message {
-  id String @id @default(uuid())
-  chatId String
-  senderId String
+  id         String   @id @default(uuid())
+  chatId     String
+  senderId   String
   receiverId String
-  content String
-  chat chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  // sender patient @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  // receiver doctor @relation(fields: [receiverId], references: [id], onDelete: Cascade)
+  content    String
+  chat       chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+model monitor {
+  id           String        @id @default(uuid())
+  monitor_data monitorData[]
+  channel      String?
+  doctorId     String
+  patientId    String
+  hospitalId   String
+  createdAt    DateTime      @default(now())
+  patient      patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor       doctor        @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  hospital     hospital      @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+}
+
+model monitorData {
+  id        Int      @id @default(autoincrement())
+  monitorId String
+  monitor   monitor  @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  bpm       Float
+  spo2      Float
   createdAt DateTime @default(now())
 }
 
 
-model monitor {
+model MedicalHistory {
   id String @id @default(uuid())
   patientId String
   patient patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  bpmSpo2 bpmSpo2[]
+  background Background[]
+  diagnoses Diagnosis[]
+  treatments Treatment[]
+  medications Medication[]
+  allergies Allergy[]
+  observations Observation[]
+  declaration Declaration[]
+  doctorId String
+  hospitalId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model bpmSpo2 {
+model Background {
+  id String @id @default(uuid())
+  medicalHistoryId String
+  medicalHistory MedicalHistory @relation(fields: [medicalHistoryId], references: [id], onDelete: Cascade)
+  content String
+}
 
-  id Int @id @default(autoincrement())
-  monitorId String 
-  monitor monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
-  bpm Float
-  spo2 Float
+model Diagnosis {
+  id String @id @default(uuid())
+  medicalHistoryId String
+  medicalHistory MedicalHistory @relation(fields: [medicalHistoryId], references: [id], onDelete: Cascade)
+  content String
+}
 
+model Treatment {
+  id String @id @default(uuid())
+  medicalHistoryId String
+  medicalHistory MedicalHistory @relation(fields: [medicalHistoryId], references: [id], onDelete: Cascade)
+  content String
+}
+
+model Medication {
+  id String @id @default(uuid())
+  medicalHistoryId String
+  medicalHistory MedicalHistory @relation(fields: [medicalHistoryId], references: [id], onDelete: Cascade)
+  content String
+}
+
+model Allergy {
+  id String @id @default(uuid())
+  medicalHistoryId String
+  medicalHistory MedicalHistory @relation(fields: [medicalHistoryId], references: [id], onDelete: Cascade)
+  content String
+}
+
+model Observation {
+  id String @id @default(uuid())
+  medicalHistoryId String
+  medicalHistory MedicalHistory @relation(fields: [medicalHistoryId], references: [id], onDelete: Cascade)
+  content String
+}
+
+model Declaration {
+  id String @id @default(uuid())
+  medicalHistoryId String
+  medicalHistory MedicalHistory @relation(fields: [medicalHistoryId], references: [id], onDelete: Cascade)
+  content String
+  signature String
+  dateSigned DateTime @default(now())
 }

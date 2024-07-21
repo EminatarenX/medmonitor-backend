@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch , Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { PatientService } from './patient.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { CreatePatientHospitalDto } from './dto/create-patient.dto-hospital';
@@ -18,7 +18,7 @@ export class PatientController {
   @UseGuards(AuthGuard)
   @Post('create')
   createPatient(@Request() req ,@Body() createPatientHospitalDto: CreatePatientHospitalDto) {
-    return this.patientService.createPatient(createPatientHospitalDto);
+    return this.patientService.createPatient(req.user.sub, createPatientHospitalDto);
   }
 
   @Get(':id')

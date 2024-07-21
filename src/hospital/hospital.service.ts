@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateHospitalDto } from './dto/create-hospital.dto';
 import { UpdateHospitalDto } from './dto/update-hospital.dto';
 import { HospitalRepository } from './hospital.repository';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class HospitalService {
@@ -20,6 +21,10 @@ export class HospitalService {
 
   async findAll() {
     return await this.hospitalRepository.findAll()
+  }
+
+  async findAllPatients(id: string, paginationDto: PaginationDto) {
+    return this.hospitalRepository.findAllPatients(id, paginationDto)
   }
 
   async findOne(id: string) {

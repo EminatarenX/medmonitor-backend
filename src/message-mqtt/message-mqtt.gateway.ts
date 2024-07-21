@@ -47,15 +47,14 @@ export class MessageMqttGateway {
   }
 
   @SubscribeMessage('health/monitor')
-  handleMessage(client: Socket, payload: {BPM: string, SPO2: string}) {
+  handleMessage(client: Socket, payload: {BPM: string, SPO2: string} | any) {
   
     if (client.handshake.headers.authorization) {
-
       const token = client.handshake.headers.authentication as string;
       const userPayload = this.jwtService.verify(token);
       const user = this.messageMqttService.getUser(userPayload.sub);
 
-      this.wss.to(`monitor/${user.user.id}`).emit('monitor');
+      this.wss.to(`monitor/${user.user.id}`).emit('monitor', payload);
 
     } 
     

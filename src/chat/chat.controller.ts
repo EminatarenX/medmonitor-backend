@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Request } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { CreateChatDto } from './dto/create-chat.dto';
+import { CreateChatDoctorDto, CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { AuthGuard } from 'src/auth/hospital/auth.guard';
 import { UseGuards } from '@nestjs/common';
@@ -14,6 +14,12 @@ export class ChatController {
   @Post()
   create(@Request() req, @Body() createChatDto: CreateChatDto) {
     return this.chatService.create(req.user.sub, createChatDto);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('create')
+  createFromDoctor(@Request() req, @Body() createChatDto: CreateChatDoctorDto) {
+    return this.chatService.createDoctorChat(req.user.sub, createChatDto);
   }
 
   @Get()

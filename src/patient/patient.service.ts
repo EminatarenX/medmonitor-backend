@@ -1,9 +1,16 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { PatientRepository } from './patient.repository';
 import { PrismaService } from 'src/common/db/prisma.service';
-import { PrismaClientKnownRequestError, PrismaClientValidationError } from '@prisma/client/runtime/library';
+import {
+  PrismaClientKnownRequestError,
+  PrismaClientValidationError,
+} from '@prisma/client/runtime/library';
 import { CreatePatientHospitalDto } from './dto/create-patient.dto-hospital';
 
 @Injectable()
@@ -21,24 +28,23 @@ export class PatientService {
       doctor.hospitalId,
     );
     try {
-      
-     await this.patientRepository.create(
-      createPatientDto,
-      patientId,
-      doctor.hospitalId,
-      doctorId,
-    );
+      await this.patientRepository.create(
+        createPatientDto,
+        patientId,
+        doctor.hospitalId,
+        doctorId,
+      );
     } catch (e) {
-      if(e instanceof PrismaClientKnownRequestError){
-        if(e.code === 'P2002'){
-          throw new BadRequestException(`Duplicate field value: ${e.meta.target}`)
+      if (e instanceof PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new BadRequestException(
+            `Duplicate field value: ${e.meta.target}`,
+          );
         }
-        throw new BadRequestException(e.message)
+        throw new BadRequestException(e.message);
       }
     }
   }
-
-
 
   async findOne(id: string) {
     const patient = await this.patientRepository.findOne(id);
@@ -55,30 +61,48 @@ export class PatientService {
   }
 
   // Create
-  async createPatient(createPatientHospitalDto : CreatePatientHospitalDto) {
-
-    const doctor = await this.db.doctor.findUnique({ where: { id: createPatientHospitalDto.doctorId } });
-    if (!doctor) throw new UnauthorizedException(); 
+  async createPatient(
+    id: string,
+    createPatientHospitalDto: CreatePatientHospitalDto,
+  ) {
+    const doctor = await this.db.doctor.findUnique({
+      where: { id: createPatientHospitalDto.doctorId },
+    });
+    if (!doctor) throw new UnauthorizedException();
 
     const patientId = this.patientRepository.generatePatientHospitalId(
       createPatientHospitalDto,
       createPatientHospitalDto.doctorId,
     );
 
-    try {
-      
-      await this.patientRepository.generatePatientHospitalId(
-       createPatientHospitalDto,
-       patientId,
-     );
-     } catch (e) {
-       if(e instanceof PrismaClientKnownRequestError){
-         if(e.code === 'P2002'){
-           throw new BadRequestException(`Duplicate field value: ${e.meta.target}`)
-         }
-         throw new BadRequestException(e.message)
-       }
-     }
+    const newPatient: CreatePatientDto = {
+      name: createPatientHospitalDto.name,
+      lastName: createPatientHospitalDto.lastName,
+      email: createPatientHospitalDto.email,
+      birthDate: createPatientHospitalDto.birthDate,
+      phone: createPatientHospitalDto.phone,
+      address: createPatientHospitalDto.address,
+      gender: createPatientHospitalDto.gender,
+    };
 
+    try {
+      return await this.patientRepository.createByHospital(
+        newPatient,
+        patientId,
+        id,
+        createPatientHospitalDto.doctorId,
+      );
+    } catch (e) {
+      if (e instanceof PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new BadRequestException(
+            `Duplicate field value: ${e.meta.target}`,
+          );
+        }
+        throw new BadRequestException(e.message);
+      }
+    }
   }
+
+  
 }

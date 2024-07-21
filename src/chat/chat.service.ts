@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateChatDto } from './dto/create-chat.dto';
+import { CreateChatDoctorDto, CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { PrismaService } from 'src/common/db/prisma.service';
 import { CreateMessageDto } from './dto/create-message.dto';
@@ -14,6 +14,15 @@ export class ChatService {
         patientId: patientId,
       },
     });
+  }
+
+  async createDoctorChat(doctorId: string, createChatDto: CreateChatDoctorDto) {
+    return this.db.chat.create({ 
+      data: {
+        doctorId: doctorId,
+        patientId: createChatDto.patientId
+      }
+    })
   }
 
   findAll() {
@@ -31,7 +40,7 @@ export class ChatService {
       where: { patientId: patientId}
     })
     if(!chat) {
-      throw new NotFoundException('El chat no existe')
+      return 
     }
     const messages = await this.db.message.findMany({
       where: { chatId: chat.id},

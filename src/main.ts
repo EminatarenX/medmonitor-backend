@@ -7,10 +7,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
-    .setTitle('Cats example')
-    .setDescription('The cats API description')
+    .setTitle('MedMonitor API')
+    .setDescription('helpfull right?')
     .setVersion('1.0')
-    .addTag('cats')
+    .addTag('medmonitor')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
@@ -18,7 +18,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [process.env.FRONTEND_URL,'http://localhost:3000'],
   })
-  app.useGlobalPipes(new ValidationPipe({
+  app.useGlobalPipes(new ValidationPipe({  
     whitelist: true,
     forbidNonWhitelisted: true,
     transform: true,

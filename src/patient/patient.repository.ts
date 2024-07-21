@@ -121,6 +121,22 @@ export class PatientRepository {
     });
   }
 
+  async createByHospital(
+    data: CreatePatientDto,
+    id: string,
+    hospitalId: string,
+    doctorId: string,
+  ) {
+    return this.db.patient.create({
+      data: {
+        ...data,
+        id,
+        hospitalId: hospitalId,
+        doctorId: doctorId,
+      },
+    });
+  }
+
 
   async findOne(id: string) {
     return this.db.patient.findUnique({ where: { id } });

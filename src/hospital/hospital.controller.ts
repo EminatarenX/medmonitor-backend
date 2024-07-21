@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Request } from '@nestjs/common';
 import { HospitalService } from './hospital.service';
 import { CreateHospitalDto } from './dto/create-hospital.dto';
 import { UpdateHospitalDto } from './dto/update-hospital.dto';
+import { AuthGuard } from 'src/auth/hospital/auth.guard';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Controller('user')
 export class HospitalController {
@@ -15,6 +17,11 @@ export class HospitalController {
   @Get()
   findAll() {
     return this.hospitalService.findAll();
+  }
+  @UseGuards(AuthGuard)
+  @Get('patients')
+  findAllPatients(@Request() req, @Query() paginationDto: PaginationDto) {
+    return this.hospitalService.findAllPatients(req.user.sub, paginationDto);
   }
 
   @Get(':id')

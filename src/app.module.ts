@@ -6,10 +6,11 @@ import { HospitalRepository } from './hospital/hospital.repository';
 import { HospitalService } from './hospital/hospital.service';
 import { DoctorModule } from './doctor/doctor.module';
 import { PatientModule } from './patient/patient.module';
-import { AppointmentModule } from './appointment/appointment.module';
 import { ChatModule } from './chat/chat.module';
 import { MessageWsModule } from './message-ws/message-ws.module';
 import { MessageMqttModule } from './message-mqtt/message-mqtt.module';
+import { MonitorModule } from './monitor/monitor.module';
+import { ClinicalRegistryModule } from './clinical-registry/clinical-registry.module';
 
 @Module({
   imports: [
@@ -17,10 +18,11 @@ import { MessageMqttModule } from './message-mqtt/message-mqtt.module';
     AuthModule,
     DoctorModule,
     PatientModule,
-    AppointmentModule,
     ChatModule,
     MessageWsModule,
     MessageMqttModule,
+    MonitorModule,
+    ClinicalRegistryModule,
   ],
   controllers: [],
   providers: [HospitalService, HospitalRepository, PrismaService],
