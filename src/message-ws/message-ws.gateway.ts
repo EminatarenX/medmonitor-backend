@@ -49,19 +49,23 @@ export class MessageWsGateway
     this.wss.to(user.socket.id).emit('message-server', payload)
   }
 
-  @SubscribeMessage('call-user')
-  handleCallUser(client: Socket, payload: MessageDto): void {
-    const user = this.messageWsService.getUser(payload.receiverId);
+  @SubscribeMessage('callUser')
+  handleCallUser(client: Socket, payload: {
+    userToCall: string,
+    signalData: any,
+    from: string,
+    name: string,
+}): void {
+    const user = this.messageWsService.getUser(payload.userToCall);
     if(!user) return;
-    const dataToSend = { signalData: payload.signalData, senderId: payload.senderId, senderName: user.user.lastName }
-    this.wss.to(user.socket.id).emit('call-user', dataToSend)
+    const dataToSend = { signal: payload.signalData, senderId: payload.from, name: `${user.user.name} ${user.user.lastName}` }
+    this.wss.to(user.socket.id).emit('callUser', dataToSend)
   } 
- 
-  @SubscribeMessage('accept-call')
-  handleAccceptCall(client: Socket, payload: MessageDto): void {
-    console.log({payload})
-    const user = this.messageWsService.getUser(payload.receiverId);
+  
+  @SubscribeMessage('answerCall')
+  handleAccceptCall(client: Socket, payload: {signal: any, to: string}): void {
+    const user = this.messageWsService.getUser(payload.to); 
     if(!user) return; 
-    this.wss.to(user.socket.id).emit('accept-call', payload.signalData)
+    this.wss.to(user.socket.id).emit('callAccepted', payload.signal)
   }
 }
