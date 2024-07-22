@@ -62,10 +62,14 @@ export class MessageWsGateway
     },
   ): void {
     const user = this.messageWsService.getUser(payload.userToCall);
+    const sender = this.messageWsService.getClientBySocketId(client.id)
+    // console.log({sender})
     if (!user) return;
     const dataToSend = {
       signal: payload.signalData,
-      senderId: client.id,
+      // Cambiar sender ID del usuario que llama, no de el usuario encontrado
+      // senderId: user.user.id,
+      senderId: sender.user.id,
       name: `${payload.from}`,
     };
     this.wss.to(user.socket.id).emit('callUser', dataToSend);
@@ -76,9 +80,10 @@ export class MessageWsGateway
     client: Socket,
     payload: { signal: any; to: string },
   ): void {
-    console.log({payload})
+    console.log({to: payload.to})
     const user = this.messageWsService.getUser(payload.to);
     if (!user) return;
+    console.log({user})
     this.wss.to(user.socket.id).emit('callAccepted', payload.signal);
-  }
+  } 
 }

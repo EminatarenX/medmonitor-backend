@@ -60,6 +60,11 @@ export class MessageWsService {
   disconnectClient(client: Socket) {
     delete this.connectedClients[client.id];
   }
+  getClientBySocketId(socketId: string) {
+    return Object.values(this.connectedClients).find(
+      (client) => client.socket.id === socketId,
+    );
+  }
 
   private checkUserConnection(user: any) {
     for (const clientId of Object.keys(this.connectedClients)) {
