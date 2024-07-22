@@ -53,4 +53,10 @@ export class DoctorController {
   remove(@Param('id') id: string) {
     return this.doctorService.remove(id);
   }
+
+  @UseGuards(AuthGuard)
+  @Get('statistics/messages')
+  getMessagesStatistics(@Request() req) {
+    return this.doctorService.getMessagesStatistics(req.user.sub);
+  }
 }

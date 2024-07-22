@@ -35,4 +35,16 @@ export class PatientController {
   remove(@Param('id') id: string) {
     return this.patientService.remove(id);
   }
+
+  @UseGuards(AuthGuard)
+  @Get('doctor/total')
+  getNumberOfPatientsByGender(@Request() req) {
+    return this.patientService.getNumberOfPatientsByGender(req.user.sub);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('anomaly-probablity/:id')
+  getAnomalyProbability( @Param('id') id: string) {
+    return this.patientService.getAnomalyProbability(id);
+  }
 }

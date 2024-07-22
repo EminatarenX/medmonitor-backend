@@ -6,6 +6,9 @@ import { CreatePatientHospitalDto } from './dto/create-patient.dto-hospital';
 
 @Injectable()
 export class PatientRepository {
+  private DANGEROUS_BPM_THRESHOLD = 120; // Ejemplo: más de 100 BPM
+  private DANGEROUS_SPO2_THRESHOLD = 90; // Ejemplo: menos del 90% SPO2
+  
   constructor(private readonly db: PrismaService) {}
 
   generatePatientId(
@@ -162,10 +165,38 @@ export class PatientRepository {
     })
 
   }
+  async getNumberOfPatientsByDoctor(doctorId: string) {
+    const woman = await this.db.patient.count({ where: { doctorId, gender: 'F' } });
+    const man = await this.db.patient.count({ where: { doctorId, gender: 'M' } });
+    return { woman, man}
+  }
 
   async remove(id: string) {
 
     return this.db.patient.delete({ where : { id }});
+  }
+  async getAnomalyProbability(patientId: string) {
+    const monitorData = await this.db.monitorData.findMany({
+      where: {
+        monitor: {
+          patientId: patientId
+        }
+      }
+    });
+
+    // Contar la cantidad de datos peligrosos
+    let dangerousCount = 0;
+    for (const data of monitorData) {
+      if (data.bpm > this.DANGEROUS_BPM_THRESHOLD || data.spo2 < this.DANGEROUS_SPO2_THRESHOLD) {
+        dangerousCount++;
+      }
+    }
+
+    // Calcular la probabilidad de anomalías
+    const totalCount = monitorData.length;
+    const anomalyProbability = totalCount > 0 ? (dangerousCount / totalCount) : 0;
+
+    return anomalyProbability;
   }
 }
 

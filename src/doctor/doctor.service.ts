@@ -74,6 +74,23 @@ export class DoctorService {
     return this.patientRepository.findAllByDoctorId(id, pagintationDto.limit, pagintationDto.offset)
   }
 
+  async getMessagesStatistics(id: string) {
+    
+    const chats = await this.dbService.chat.findMany({where: {doctorId: id}, include: {messages: true}})
+    let messages = 0
+    chats.forEach(chat => {
+        chat.messages.forEach( message => {
+          if(message.senderId === id){
+            messages++
+          }
+          if(message.receiverId === id) {
+            messages++
+          }
+        })
+    });
+    return messages
+  }
+
   handleErrors (error: any) {
     if(error.code === ''){
 

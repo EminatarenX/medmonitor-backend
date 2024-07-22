@@ -19,6 +19,8 @@ export class PatientService {
     private readonly patientRepository: PatientRepository,
     private readonly db: PrismaService,
   ) {}
+
+
   async create(createPatientDto: CreatePatientDto, doctorId: string) {
     const doctor = await this.db.doctor.findUnique({ where: { id: doctorId } });
     if (!doctor) throw new UnauthorizedException();
@@ -104,5 +106,12 @@ export class PatientService {
     }
   }
 
+  getNumberOfPatientsByGender(doctorId: string) {
+    return this.patientRepository.getNumberOfPatientsByDoctor(doctorId);
+  }
+
+  async getAnomalyProbability(patientId: string) {
+    return this.patientRepository.getAnomalyProbability(patientId); 
+  }
   
 }
