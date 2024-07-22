@@ -66,6 +66,7 @@ export class MessageWsGateway
   handleAccceptCall(client: Socket, payload: {signal: any, to: string}): void {
     const user = this.messageWsService.getUser(payload.to); 
     if(!user) return; 
+    console.log('answerCall', payload)
     this.wss.to(user.socket.id).emit('callAccepted', payload.signal)
   }
 }
