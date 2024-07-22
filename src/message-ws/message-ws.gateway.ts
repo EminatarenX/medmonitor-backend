@@ -26,47 +26,59 @@ export class MessageWsGateway
     const token = client.handshake.headers.authentication as string;
     let payload: JWTPayload;
     try {
-      payload = this.jwtService.verify( token );
-      await this.messageWsService.registerClient(client, payload.sub, payload.role);
-
+      payload = this.jwtService.verify(token);
+      await this.messageWsService.registerClient(
+        client,
+        payload.sub,
+        payload.role,
+      );
     } catch (error) {
       client.disconnect();
-      return
+      return;
     }
 
     // console.log(this.messageWsService.getConnectedClients().map(e => e))
   }
 
   handleDisconnect(client: Socket) {
-    this.messageWsService.disconnectClient(client)
-
+    this.messageWsService.disconnectClient(client);
   }
 
   @SubscribeMessage('message')
   handleMessage(client: Socket, payload: MessageDto): void {
     const user = this.messageWsService.getUser(payload.receiverId);
-    if(!user) return;
-    this.wss.to(user.socket.id).emit('message-server', payload)
+    if (!user) return;
+    this.wss.to(user.socket.id).emit('message-server', payload);
   }
 
   @SubscribeMessage('callUser')
-  handleCallUser(client: Socket, payload: {
-    userToCall: string,
-    signalData: any,
-    from: string,
-    name: string,
-}): void {
+  handleCallUser(
+    client: Socket,
+    payload: {
+      userToCall: string;
+      signalData: any;
+      from: string;
+      name: string;
+    },
+  ): void {
     const user = this.messageWsService.getUser(payload.userToCall);
-    if(!user) return;
-    const dataToSend = { signal: payload.signalData, senderId: payload.from, name: `${user.user.name} ${user.user.lastName}` }
-    this.wss.to(user.socket.id).emit('callUser', dataToSend)
-  } 
-  
+    if (!user) return;
+    const dataToSend = {
+      signal: payload.signalData,
+      senderId: client.id,
+      name: `${payload.from}`,
+    };
+    this.wss.to(user.socket.id).emit('callUser', dataToSend);
+  }
+
   @SubscribeMessage('answerCall')
-  handleAccceptCall(client: Socket, payload: {signal: any, to: string}): void {
-    const user = this.messageWsService.getUser(payload.to); 
-    if(!user) return; 
-    console.log('answerCall', payload)
-    this.wss.to(user.socket.id).emit('callAccepted', payload.signal)
+  handleAcceptCall(
+    client: Socket,
+    payload: { signal: any; to: string },
+  ): void {
+    console.log({payload})
+    const user = this.messageWsService.getUser(payload.to);
+    if (!user) return;
+    this.wss.to(user.socket.id).emit('callAccepted', payload.signal);
   }
 }
