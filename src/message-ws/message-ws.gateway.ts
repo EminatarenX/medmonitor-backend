@@ -4,12 +4,12 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-} from '@nestjs/websockets';
-import { MessageWsService } from './message-ws.service';
-import { Server, Socket } from 'socket.io';
-import { JwtService } from '@nestjs/jwt';
-import { JWTPayload } from 'src/auth/jwt/jwtpayload.interface';
-import { MessageDto } from './dtos/message.dto';
+} from "@nestjs/websockets";
+import { MessageWsService } from "./message-ws.service";
+import { Server, Socket } from "socket.io";
+import { JwtService } from "@nestjs/jwt";
+import { JWTPayload } from "src/auth/jwt/jwtpayload.interface";
+import { MessageDto } from "./dtos/message.dto";
 
 @WebSocketGateway({ cors: true })
 export class MessageWsGateway
@@ -24,6 +24,7 @@ export class MessageWsGateway
 
   async handleConnection(client: Socket) {
     const token = client.handshake.headers.authentication as string;
+    this.wss.emit("client", token);
     let payload: JWTPayload;
     try {
       payload = this.jwtService.verify(token);
@@ -44,14 +45,14 @@ export class MessageWsGateway
     this.messageWsService.disconnectClient(client);
   }
 
-  @SubscribeMessage('message')
+  @SubscribeMessage("message")
   handleMessage(client: Socket, payload: MessageDto): void {
     const user = this.messageWsService.getUser(payload.receiverId);
     if (!user) return;
-    this.wss.to(user.socket.id).emit('message-server', payload);
+    this.wss.to(user.socket.id).emit("message-server", payload);
   }
 
-  @SubscribeMessage('callUser')
+  @SubscribeMessage("callUser")
   handleCallUser(
     client: Socket,
     payload: {
@@ -62,7 +63,7 @@ export class MessageWsGateway
     },
   ): void {
     const user = this.messageWsService.getUser(payload.userToCall);
-    const sender = this.messageWsService.getClientBySocketId(client.id)
+    const sender = this.messageWsService.getClientBySocketId(client.id);
     // console.log({sender})
     if (!user) return;
     const dataToSend = {
@@ -72,18 +73,15 @@ export class MessageWsGateway
       senderId: sender.user.id,
       name: `${payload.from}`,
     };
-    this.wss.to(user.socket.id).emit('callUser', dataToSend);
+    this.wss.to(user.socket.id).emit("callUser", dataToSend);
   }
 
-  @SubscribeMessage('answerCall')
-  handleAcceptCall(
-    client: Socket,
-    payload: { signal: any; to: string },
-  ): void {
-    console.log({to: payload.to})
+  @SubscribeMessage("answerCall")
+  handleAcceptCall(client: Socket, payload: { signal: any; to: string }): void {
+    console.log({ to: payload.to });
     const user = this.messageWsService.getUser(payload.to);
     if (!user) return;
-    console.log({user})
-    this.wss.to(user.socket.id).emit('callAccepted', payload.signal);
-  } 
+    console.log({ user });
+    this.wss.to(user.socket.id).emit("callAccepted", payload.signal);
+  }
 }
